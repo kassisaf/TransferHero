@@ -1,9 +1,6 @@
 import csv
 import os
-import time
 from re import match
-
-import fitz  # AKA pymupdf
 from TransferHero import AssistOrg
 from TransferHero.Course import Course
 
@@ -30,44 +27,23 @@ if __name__ == '__main__':
     # for course in sorted(courses):
     #     print(f'   {course}', end='')
     #     AssistOrg.get_agreement_pdf(driver, CATALOG_YEAR, SCHOOL_NAME, course.school, MAJOR_NAME)
-    #     time.sleep(5)  # Avoid hammering
+    #     sleep(5)  # Avoid hammering
     # driver.close()
 
-    # TODO parse out our PDFs to verify which classes satisfy the class we need
+    # Parse out our PDFs to verify which classes satisfy the class we need
     for filename in os.listdir(DOWNLOAD_FOLDER):
         absolute_filename = os.path.join(DOWNLOAD_FOLDER, filename)
         file_ext = os.path.splitext(filename)
 
-        # Skip non-PDFs and remove duplicates
-        if file_ext[1].lower() != '.pdf':
-            continue
-        elif match(r'\(\d{1,2}\)', file_ext[0][-3:]):
+        # Delete duplicate PDFs (i.e. from multiple downloads during testing)
+        if match(r'\(\d{1,2}\)', file_ext[0][-3:]):
             os.remove(absolute_filename)
             continue
 
-        # Open the PDF, look for the line containing our target course and find equivalencies around it
-        with fitz.open(absolute_filename) as pdf:
-            text = []
-            for page in pdf:
-                # Looks ugly but this gets rid of all the nasty zero-width spaces that prevent us from searching easily
-                text += page.get_text().encode('ascii', 'ignore').decode('unicode_escape').split('\n')
-
-            # Get school name before we look at courses. Looks like "From: {School Name}"
-            print(f'Parsing {filename}...', end='')
-            for line in text:
-                if "From: " in line:
-                    school = line.split(':')[1].strip()
-                    print(f'({school})')
-                    break
-
-            # See if our target course is listed
-            #  There may be multiple equivalent courses separated by '--- And ---' or '--- Or ---' but they may not
-            #  appear in natural reading order.  TODO: find a smarter way to extract all equivalent courses
-            #  https://pymupdf.readthedocs.io/en/latest/faq.html#how-to-extract-text-in-natural-reading-order
-            for line in text:
-                if TARGET_COURSE in line:
-                    print(f'   Found {TARGET_COURSE}')
-                    break
+        if file_ext[1].lower() == '.pdf':
+            school = AssistOrg.parse_agreement_pdf(absolute_filename, TARGET_COURSE)
+            if school:
+                print(f'{school} offers a {TARGET_COURSE} equivalent')
 
     # TODO Create a new spreadsheet of courses that have a transfer agreement
 

@@ -1,7 +1,7 @@
 class Course:
-    def __init__(self, school, name_number, description, has_agreement=False):
+    def __init__(self, school, course_code, description, has_agreement=False):
         self.school = school
-        self.name_number = name_number
+        self.name_number = course_code
         self.description = description
         self.has_agreement = has_agreement
 

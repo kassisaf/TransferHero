@@ -1,11 +1,14 @@
-import time
+import os
 import random
+from re import match
+from time import sleep
+import fitz
 from selenium.webdriver import Firefox, FirefoxProfile
 from selenium.webdriver.firefox.options import Options
 from selenium.webdriver.common.keys import Keys
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import ElementClickInterceptedException
-from selenium.common.exceptions import ElementNotInteractableException
+# from selenium.common.exceptions import ElementNotInteractableException
 
 random.seed()
 MAX_RETRIES = 11
@@ -15,7 +18,7 @@ MAX_RETRIES = 11
 def slow_type(element, text, delay_min=0.02, delay_max=0.14):
     for character in text:
         element.send_keys(character)
-        time.sleep(random.uniform(delay_min, delay_max))
+        sleep(random.uniform(delay_min, delay_max))
 
 
 # Clears out a text field by simulating select all + delete
@@ -61,7 +64,7 @@ def get_agreement_pdf(driver, years, university, city_college, target_major):
     # "Other Institution" gets typed slowly because the results update in real time
     clear_field(agreement)  # Doesn't seem necessary but just to be safe
     slow_type(agreement, city_college)  # replace with field from google sheet
-    time.sleep(0.5)
+    sleep(0.5)
     agreement.send_keys(Keys.RETURN)
 
     # "Other Institution" dropdown obscures the submit button, so if search fails we can't click it
@@ -73,7 +76,7 @@ def get_agreement_pdf(driver, years, university, city_college, target_major):
             if i == MAX_RETRIES:
                 raise Exception('Failed to click "View Agreements" button')
             agreement.send_keys(Keys.RETURN)
-            time.sleep(1)
+            sleep(1)
         else:
             break
 
@@ -81,7 +84,7 @@ def get_agreement_pdf(driver, years, university, city_college, target_major):
     major_input = driver.find_element_by_css_selector('.filterAgreements input')
     clear_field(major_input)  # Clear the field before typing in it again
     major_input.send_keys(target_major)
-    time.sleep(0.5)
+    sleep(0.5)
 
     majors_list = driver.find_elements_by_css_selector('.disciplines .viewByRowColText')
     major_row = None
@@ -95,7 +98,7 @@ def get_agreement_pdf(driver, years, university, city_college, target_major):
                     break
             major_row.click()
         except AttributeError:
-            time.sleep(1)
+            sleep(1)
         else:
             break
 
@@ -103,10 +106,40 @@ def get_agreement_pdf(driver, years, university, city_college, target_major):
     for i in range(MAX_RETRIES):
         try:
             major_row.click()
-            time.sleep(0.5)
+            sleep(0.5)
             download_button = driver.find_element_by_xpath('//*[@id="view-results"]/div/div[4]/button')
         except NoSuchElementException:
-            time.sleep(1)
+            sleep(1)
         else:
             download_button.click()
             break
+
+
+# Looks for a school name and our target course inside a PDF file
+# Returns the school name, or None if the course was not found
+def parse_agreement_pdf(absolute_filename, target_course_code):
+    filename = os.path.split(absolute_filename)[1]
+    # Open the PDF, look for the line containing our target course and find equivalencies around it
+    with fitz.open(absolute_filename) as pdf:
+        text = []
+        for page in pdf:
+            # Looks ugly but this gets rid of all the nasty zero-width spaces that prevent us from searching easily
+            text += page.get_text().encode('ascii', 'ignore').decode('unicode_escape').split('\n')
+
+        # Get school name before we look at courses. Looks like "From: {School Name}"
+        # print(f'Parsing {filename}', end='')
+        for line in text:
+            if "From: " in line:
+                school = line.split(':')[1].strip()
+                # print(f' ({school})')
+                break  # Got what we came here for
+
+        # See if our target course is listed
+        #  There may be multiple equivalent courses separated by '--- And ---' or '--- Or ---' but they may not
+        #  appear in natural reading order.  TODO: find a smarter way to extract all equivalent courses
+        #  https://pymupdf.readthedocs.io/en/latest/faq.html#how-to-extract-text-in-natural-reading-order
+        for line in text:
+            if target_course_code in line:
+                return school
+
+    return None
