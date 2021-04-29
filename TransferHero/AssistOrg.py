@@ -8,6 +8,7 @@ from selenium.common.exceptions import ElementClickInterceptedException
 from selenium.common.exceptions import ElementNotInteractableException
 
 random.seed()
+MAX_RETRIES = 11
 
 
 # Enters text at a humanly rate
@@ -15,6 +16,12 @@ def slow_type(element, text, delay_min=0.02, delay_max=0.14):
     for character in text:
         element.send_keys(character)
         time.sleep(random.uniform(delay_min, delay_max))
+
+
+# Clears out a text field by simulating select all + delete
+def clear_field(element):
+    element.send_keys(Keys.CONTROL + 'a')
+    element.send_keys(Keys.DELETE)
 
 
 # Creates the Selenium web driver needed to automate assist.org
@@ -29,7 +36,7 @@ def create_driver(download_folder, headless=False):
     profile.set_preference('browser.helperApps.neverAsk.saveToDisk', 'application/pdf')
 
     driver = Firefox(options=opts, firefox_profile=profile)
-    driver.get('http://assist.org')
+    driver.get('https://assist.org')
     return driver
 
 
@@ -44,8 +51,6 @@ def get_agreement_pdf(driver, years, university, city_college, target_major):
     except NoSuchElementException as e:
         print(f'ERROR: One or more elements not found')
         raise e
-    else:
-        print('Found necessary fields for initial search')
 
     # Fill out "Academic Year", "Institution", and "Other Institution" fields
     year.send_keys(years)
@@ -54,18 +59,18 @@ def get_agreement_pdf(driver, years, university, city_college, target_major):
     school.send_keys(Keys.RETURN)
 
     # "Other Institution" gets typed slowly because the results update in real time
+    clear_field(agreement)  # Doesn't seem necessary but just to be safe
     slow_type(agreement, city_college)  # replace with field from google sheet
     time.sleep(0.5)
     agreement.send_keys(Keys.RETURN)
 
     # "Other Institution" dropdown obscures the submit button, so if search fails we can't click it
     #  If click fails, attempt to close the dropdown and wait before retrying
-    max_retries = 11
-    for i in range(max_retries):
+    for i in range(MAX_RETRIES):
         try:
             view_button.click()
         except ElementClickInterceptedException:
-            if i == max_retries:
+            if i == MAX_RETRIES:
                 raise Exception('Failed to click "View Agreements" button')
             agreement.send_keys(Keys.RETURN)
             time.sleep(1)
@@ -74,15 +79,34 @@ def get_agreement_pdf(driver, years, university, city_college, target_major):
 
     # Find and select the correct major
     major_input = driver.find_element_by_css_selector('.filterAgreements input')
+    clear_field(major_input)  # Clear the field before typing in it again
     major_input.send_keys(target_major)
     time.sleep(0.5)
 
     majors_list = driver.find_elements_by_css_selector('.disciplines .viewByRowColText')
     major_row = None
-    for row in majors_list:
-        print(row.text)
-        if target_major in row.text:
-            major_row = row
+
+    # Need to make sure we always find the specified major in the list of majors else nothing to click on
+    for i in range(MAX_RETRIES):
+        try:
+            for row in majors_list:
+                if target_major in row.text:
+                    major_row = row
+                    break
+            major_row.click()
+        except AttributeError:
+            time.sleep(1)
+        else:
             break
 
-    major_row.click()
+    # If the download button isn't visible, try to click the major button and wait before trying again
+    for i in range(MAX_RETRIES):
+        try:
+            major_row.click()
+            time.sleep(0.5)
+            download_button = driver.find_element_by_xpath('//*[@id="view-results"]/div/div[4]/button')
+        except NoSuchElementException:
+            time.sleep(1)
+        else:
+            download_button.click()
+            break
