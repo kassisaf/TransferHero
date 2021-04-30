@@ -3,9 +3,9 @@ import os
 from re import match
 from time import sleep
 from TransferHero import assistDotOrg
-from TransferHero.spreadsheet import Spreadsheet
-from TransferHero.search import feeling_ducky
 from TransferHero.course import Course
+from TransferHero.search import feeling_ducky
+from TransferHero.spreadsheet import Spreadsheet
 
 
 HAMMER_DELAY = 3
@@ -39,7 +39,6 @@ if __name__ == '__main__':
         schedule_link = feeling_ducky(search_terms)
         spreadsheet.add_hyperlink(spreadsheet.workbook.active.max_row, 1, schedule_link)
 
-    # TODO run PDF downloads asynchronously
     # Download agreement PDFs for every community college in our list
     # print('Downloading course agreements...')
     # # Create the Selenium web driver we'll need for automation
