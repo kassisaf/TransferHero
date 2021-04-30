@@ -3,17 +3,17 @@
 TransferHero is a tool I wrote to help me find community colleges offering Data Structures courses over Summer 2021.  Without it (and my awesome counselor who provided the csv file that inspired the project) I would almost certainly have had to wait another semester to transfer.
 
 ## What does it actually do?
-1. Reads in a .csv file containing a list of classes with a specific C-ID. **Classes with the same C-ID are considered equivalent among California Community Colleges (CCC's)*.
-1. Creates a new spreadsheet with only the columns we care about, along with hyperlinks to each school's class schedule page, plus some conditional formatting to highlight interesting data
-1. Downloads and parses articulation agreements and removes any courses that do not have an articulation agreement with your transfer school
+1. Reads in a .csv file containing a list of classes with a specific C-ID. *(Classes with the same C-ID are considered equivalent among California Community Colleges)*.
+1. Creates a new spreadsheet with only the columns we care about, along with hyperlinks to each school's class schedule page, plus some conditional formatting to highlight courses based on their confirmed availability.
+1. Downloads and parses articulation agreements and removes any courses that are not recognized by your transfer school
 
-Almost every school does their schedule page differently, so unfortunately I have to check course availability manually.  TransferHero just makes the process a lot faster and less tedious.
+Unfortunately almost every school seems to use a different system for their class schedules, so I have to check course availability manually.  TransferHero just makes that process faster and less tedious.
 
 Given enough time, I could create automation profiles for each school's schedule system to confirm course availability, but the amount of work that would require is currently outside the scope of the project.  
 
 ## What I learned
 
-#### How to use Selenium to automate data retrieval from unparsable webpages
+### How to use Selenium to automate data retrieval from unparsable webpages
 Assist.org is an amazing resource, but it lacks a public API, hides most of its elements behind AJAX calls, and uses ng-bootstrap which means just about everything is a div instead of a more sensible/descriptive HTML tag.  Parsing it would be difficult or impossible, but Selenium allows us to render the page in an actual browser and simulate human-like interaction to get to the data we need.
 
 ### How to create local spreadsheets programmatically using `openpyxl`
