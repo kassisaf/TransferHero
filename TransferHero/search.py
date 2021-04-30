@@ -1,6 +1,5 @@
 import requests
 from urllib.parse import urlparse
-from main import APP_NAME
 
 
 # Simple attempt at returning a school's class schedule
@@ -11,7 +10,7 @@ def find_class_schedule_link(school_name, other_keywords=''):
     google = requests.get(f'https://www.google.com/search?q={query_string}&btnI', allow_redirects='false')
     # If it's not a .edu page, try DuckDuckGo instead
     if not urlparse(google.url).netloc.endswith('.edu'):
-        duckduckgo = requests.get(f'https://duckduckgo.com/?t={APP_NAME}?q=!{query_string}')
+        duckduckgo = requests.get(f'https://duckduckgo.com/?t=TransferHero?q=!{query_string}')
         if urlparse(duckduckgo.url).netloc.endswith('.edu'):
             return duckduckgo.url
     # Still no .edu so just return the google result

@@ -9,3 +9,6 @@ class Course:
 
     def __lt__(self, other):
         return self.school[0] < other.school[0]
+
+    def to_list(self):
+        return [self.school, self.course_code, self.description]
