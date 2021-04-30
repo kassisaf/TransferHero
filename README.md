@@ -13,7 +13,7 @@ Given enough time, I could create automation profiles for each school's schedule
 
 ## What I learned
 
-#### How to use Selenium to automate data retrieval from unparsable webpages
+### How to use Selenium to automate data retrieval from unparsable webpages
 Assist.org is an amazing resource, but it lacks a public API, hides most of its elements behind AJAX calls, and uses ng-bootstrap which means just about everything is a div instead of a more sensible/descriptive HTML tag.  Parsing it would be difficult or impossible, but Selenium allows us to render the page in an actual browser and simulate human-like interaction to get to the data we need.
 
 ### How to create local spreadsheets programmatically using `openpyxl`
