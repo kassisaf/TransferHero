@@ -3,7 +3,7 @@
 TransferHero is a tool I wrote to help me find community colleges offering Data Structures courses over Summer 2021.  Without it (and my awesome counselor who provided the csv file that inspired the project) I would almost certainly have had to wait another semester to transfer.
 
 ## What does it actually do?
-1. Reads in a .csv file containing a list of classes with a specific C-ID. **Classes with the same C-ID are considered equivalent among California Community Colleges (CCC's)*.
+1. Reads in a .csv file containing a list of classes with a specific C-ID. * *Classes with the same C-ID are considered equivalent among California Community Colleges (CCC's)*.
 1. Creates a new spreadsheet with only the columns we care about, along with hyperlinks to each school's class schedule page, plus some conditional formatting to highlight interesting data
 1. Downloads and parses articulation agreements and removes any courses that do not have an articulation agreement with your transfer school
 
