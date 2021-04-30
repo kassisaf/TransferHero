@@ -7,8 +7,10 @@ from openpyxl.utils import get_column_letter
 from openpyxl.styles import Font, PatternFill, Border
 from openpyxl.formatting.rule import FormulaRule
 from TransferHero import assistDotOrg
-from TransferHero import google
+from TransferHero.search import find_class_schedule_link
 from TransferHero.course import Course
+
+APP_NAME = "TransferHero"
 
 HAMMER_DELAY = 3
 DOWNLOAD_FOLDER = r'S:\assist'
@@ -48,11 +50,12 @@ if __name__ == '__main__':
         absolute_filename = os.path.join(DOWNLOAD_FOLDER, filename)
         file_ext = os.path.splitext(filename)
 
-        # Delete duplicate PDFs (i.e. from multiple downloads during testing)
-        # if match(r'\(\d{1,2}\)', file_ext[0][-3:]):
-        #     os.remove(absolute_filename)
-        #     continue
+        # Delete duplicate PDFs (i.e. identical catalogs from the same school)
+        if match(r'\(\d{1,2}\)', file_ext[0][-3:]):
+            os.remove(absolute_filename)
+            continue
 
+        # Parse the PDF and look for our target course
         if file_ext[1].lower() == '.pdf':
             school = assistDotOrg.parse_agreement_pdf(absolute_filename, TARGET_COURSE)
             if school:  # Target course was found in this school's agreement so the name was returned
@@ -67,7 +70,7 @@ if __name__ == '__main__':
                 sheet.append([this_course.school, this_course.course_code, this_course.description])
 
                 # Try to find and add a link to the school's class schedule
-                schedule_link = google.find_class_schedule_page(school)
+                schedule_link = find_class_schedule_link(school)
                 cell = sheet.cell(row=sheet.max_row, column=1)
                 cell.hyperlink = schedule_link
                 cell.style = 'Hyperlink'
