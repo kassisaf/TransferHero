@@ -4,7 +4,7 @@ from re import match
 from time import sleep
 from TransferHero import assistDotOrg
 from TransferHero.spreadsheet import Spreadsheet
-from TransferHero.search import find_class_schedule_link
+from TransferHero.search import feeling_ducky
 from TransferHero.course import Course
 
 
@@ -33,7 +33,13 @@ if __name__ == '__main__':
     spreadsheet = Spreadsheet(sheet_title, header_row)
     for course in sorted(courses):
         spreadsheet.add_row(course.to_list())
+        # Try to find and add a link to the school's class schedule
+        # TODO use existing link if we've already looked at this school for another course
+        search_terms = f'{course.school} california class schedule search summer 2021'
+        schedule_link = feeling_ducky(search_terms)
+        spreadsheet.add_hyperlink(spreadsheet.workbook.active.max_row, 1, schedule_link)
 
+    # TODO run PDF downloads asynchronously
     # Download agreement PDFs for every community college in our list
     # print('Downloading course agreements...')
     # # Create the Selenium web driver we'll need for automation

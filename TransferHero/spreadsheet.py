@@ -1,6 +1,6 @@
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
-from openpyxl.styles import Font, PatternFill, Border
+from openpyxl.styles import Font, PatternFill
 from openpyxl.formatting.rule import FormulaRule
 
 
@@ -76,8 +76,8 @@ class Spreadsheet:
                 self.workbook.save(output_filename)
             except PermissionError:
                 retry = input('Error: Failed to save spreadsheet. Is the file already open?\n'
-                              '  Please close Excel and press enter to continue, or type a to abort')
+                              '  Please close Excel and press enter to continue, or type a to abort\n')
             else:
-                print(f'Done. Saved results to:\n'
-                      f'{output_filename}')
+                print(f'All done. Saved results to:\n'
+                      f'   {output_filename}')
                 break
