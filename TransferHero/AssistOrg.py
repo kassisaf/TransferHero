@@ -1,6 +1,5 @@
 import os
 import random
-from re import match
 from time import sleep
 import fitz
 from selenium.webdriver import Firefox, FirefoxProfile
