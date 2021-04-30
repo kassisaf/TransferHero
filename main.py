@@ -26,12 +26,13 @@ if __name__ == '__main__':
         reader = csv.DictReader(csv_file)
         for row in reader:
             courses.append(Course(row['Institution'], row['Local Dept. Name & Number'], row['Local Course Title(s)']))
+    courses.sort()
 
     # Start a new spreadsheet for our output
     sheet_title = f'{TARGET_COURSE} agreements'
     header_row = ['School', 'Class', 'Description', 'Offered', 'Online', 'Synchronous', 'Notes']
     spreadsheet = Spreadsheet(sheet_title, header_row)
-    for course in sorted(courses):
+    for course in courses:
         spreadsheet.add_row(course.to_list())
         # Try to find and add a link to the school's class schedule
         # TODO use existing link if we've already looked at this school for another course
@@ -40,14 +41,14 @@ if __name__ == '__main__':
         spreadsheet.add_hyperlink(spreadsheet.workbook.active.max_row, 1, schedule_link)
 
     # Download agreement PDFs for every community college in our list
-    # print('Downloading course agreements...')
-    # # Create the Selenium web driver we'll need for automation
-    # driver = assistDotOrg.create_driver(download_folder=DOWNLOAD_FOLDER)
-    # for course in sorted(courses):
-    #     print(f'   {course}')
-    #     assistDotOrg.get_agreement_pdf(driver, CATALOG_YEAR, SCHOOL_NAME, course.school, MAJOR_NAME)
-    #     sleep(HAMMER_DELAY)  # Avoid hammering assist.org
-    # driver.close()
+    print('Downloading course agreements...')
+    # Create the Selenium web driver we'll need for automation
+    driver = assistDotOrg.create_driver(download_folder=DOWNLOAD_FOLDER, headless=True)
+    for course in courses:
+        # print(f'   {course}')
+        assistDotOrg.get_agreement_pdf(driver, CATALOG_YEAR, SCHOOL_NAME, course.school, MAJOR_NAME)
+        sleep(HAMMER_DELAY)  # Avoid hammering assist.org
+    driver.close()
 
     # # Parse out our PDFs to verify which classes satisfy the class we need
     # for filename in os.listdir(DOWNLOAD_FOLDER):

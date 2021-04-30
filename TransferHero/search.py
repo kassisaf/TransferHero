@@ -1,4 +1,4 @@
-# Returns an "I'm feeling lucky/ducky" link from duckduckgo
+# Returns a link that redirects to the first result from DuckDuckGo
 def feeling_ducky(search_terms):
     # print(f'Searching "{search_terms}"')
     search_terms.replace('+', '')

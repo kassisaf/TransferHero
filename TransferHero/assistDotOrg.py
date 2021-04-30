@@ -29,7 +29,7 @@ def clear_field(element):
 # Creates the Selenium web driver needed to automate assist.org
 def create_driver(download_folder, headless=False):
     opts = Options()
-    # opts.headless = True
+    opts.headless = headless
 
     profile = FirefoxProfile()
     profile.set_preference('browser.download.folderList', 2)
