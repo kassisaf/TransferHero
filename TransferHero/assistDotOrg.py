@@ -35,7 +35,9 @@ def create_driver(download_folder, headless=False):
     profile.set_preference('browser.download.folderList', 2)
     profile.set_preference('browser.download.manager.showWhenStarting', False)
     profile.set_preference('browser.download.dir', download_folder)
+    profile.set_preference('browser.download.useDownloadDir', True)
     profile.set_preference('browser.helperApps.neverAsk.saveToDisk', 'application/pdf')
+    profile.set_preference('pdfjs.disabled', True)
 
     driver = Firefox(options=opts, firefox_profile=profile)
     driver.get('https://assist.org')

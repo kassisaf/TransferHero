@@ -1,7 +1,8 @@
 .idea/
 venv/
 secrets.py
-*.csv
-*.pdf
 *.pyc
+*.csv
+*.xlsx
+*.pdf
 *.log
