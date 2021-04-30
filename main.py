@@ -56,8 +56,6 @@ if __name__ == '__main__':
         if file_ext[1].lower() == '.pdf':
             school = assistDotOrg.parse_agreement_pdf(absolute_filename, TARGET_COURSE)
             if school:  # Target course was found in this school's agreement so the name was returned
-                # Add this to the spreadsheet as a possible option
-
                 # Since we can't accurately parse the course name from the PDF, try to look it up using the list we
                 #  created from our csv file
                 this_course = Course(school, 'Unknown', 'Unknown')
@@ -65,9 +63,14 @@ if __name__ == '__main__':
                     if school == course.school:
                         this_course = course
 
-                # Try to find a link to the school's class schedule
-                # schedule_link = google.find_class_schedule_page(school)
+                # Add the class to the spreadsheet
                 sheet.append([this_course.school, this_course.course_code, this_course.description])
+
+                # Try to find and add a link to the school's class schedule
+                schedule_link = google.find_class_schedule_page(school)
+                cell = sheet.cell(row=sheet.max_row, column=1)
+                cell.hyperlink = schedule_link
+                cell.style = 'Hyperlink'
 
     # Make our worksheet a little prettier
     # Bold the first row

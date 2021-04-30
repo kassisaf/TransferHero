@@ -16,7 +16,7 @@ def find_class_schedule_page(school_name, other_keywords=''):
     results = search(query_string, KEY, CSE, num=10)
     for result in results:
         # Since Selenium brings in urllib anyway, we might as well use it here to check the TLD
-        url = urlparse(result.link)
-        if url.netloc.endswith('.edu'):
-            return result.link
-    return results[0].link  # If none of the top 10 results were on a .edu domain just get the first one
+        url = result['link']
+        if urlparse(url).netloc.endswith('.edu'):
+            return url
+    return results[0]['link']  # If none of the top 10 results were on a .edu domain just return the first one
