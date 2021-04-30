@@ -25,7 +25,7 @@ This one's a bit of a mess.  I was surprised to find that there's not a single u
 ### How to use Python's built-in `csv` module to create a dictionary with key names based on a csv file's first row.
 Much cleaner than manually parsing csv and matching values to column indices.
 
-### How to find and process Google search results in Python
+### How to find and process Google/DuckDuckGo search results in Python
 I tried several different methods for this:
 
 - The `google` package on pypi was a mess and threw exceptions all over the place.  Didn't bother to debug.
