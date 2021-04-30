@@ -4,7 +4,8 @@ from re import match
 from time import sleep
 from openpyxl import Workbook
 from openpyxl.utils import get_column_letter
-from openpyxl.styles import Font
+from openpyxl.styles import Font, PatternFill, Border
+from openpyxl.formatting.rule import FormulaRule
 from TransferHero import assistDotOrg
 from TransferHero import google
 from TransferHero.course import Course
@@ -83,6 +84,14 @@ if __name__ == '__main__':
                 column_widths.append(len(str(cell.value)))
     for i, column_width in enumerate(column_widths):
         sheet.column_dimensions[get_column_letter(i + 1)].width = column_width + 3
+    # Conditional formatting for "Offered?" column
+    red = 'ffc7ce'
+    green = 'c6efce'
+    red_fill = PatternFill(start_color=red, end_color=red, fill_type='solid')
+    green_fill = PatternFill(start_color=green, end_color=green, fill_type='solid')
+    sheet.conditional_formatting.add('D2:D1000', FormulaRule(formula=['NOT(ISERROR(SEARCH("N",D2)))'], stopIfTrue=True, fill=red_fill))
+    sheet.conditional_formatting.add('D2:D1000', FormulaRule(formula=['NOT(ISERROR(SEARCH("Y",D2)))'], stopIfTrue=True, fill=green_fill))
 
+    # Save the spreadsheet
     output_filename = os.path.join(DOWNLOAD_FOLDER, f'{SCHOOL_NAME} {TARGET_COURSE} agreements.xlsx')
     workbook.save(output_filename)
