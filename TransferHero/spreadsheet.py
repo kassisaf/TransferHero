@@ -33,27 +33,51 @@ class Spreadsheet:
     def prettify(self):
         sheet = self.workbook.active
 
-        # Fix column widths
-        column_widths = []
-        for row in sheet.iter_rows():
-            for i, cell in enumerate(row):
-                try:
-                    column_widths[i] = max(column_widths[i], len(str(cell.value)))
-                except IndexError:
-                    column_widths.append(len(str(cell.value)))
-        for i, column_width in enumerate(column_widths):
-            sheet.column_dimensions[get_column_letter(i + 1)].width = column_width
-
-        # Conditional formatting for "Offered?" column
+        # Define some background fill styles that we'll use for conditional formatting
         red = 'ffc7ce'
         green = 'c6efce'
         red_fill = PatternFill(start_color=red, end_color=red, fill_type='solid')
         green_fill = PatternFill(start_color=green, end_color=green, fill_type='solid')
 
-        # TODO get column letter for Offered column instead of hardcoding D
-        sheet.conditional_formatting.add('D2:D1000', FormulaRule(formula=['NOT(ISERROR(SEARCH("N",D2)))'], stopIfTrue=True, fill=red_fill))
-        sheet.conditional_formatting.add('D2:D1000', FormulaRule(formula=['NOT(ISERROR(SEARCH("Y",D2)))'], stopIfTrue=True, fill=green_fill))
+        # Iterate over the first row doing the following:
+        #  Set bold font for all cells in the first row
+        #  Set static column sizes since our auto resize isn't useful for this data set
+        #  Collect letters of the cells where we want to apply conditional formatting
+        columns_to_format = []
+        for i, cell in enumerate(sheet[1]):
+            column_letter = get_column_letter(i + 1)
+            cell.font = Font(bold=True)
+            if cell.value == 'School':
+                sheet.column_dimensions[column_letter].width = 33
+            elif cell.value == 'Class':
+                sheet.column_dimensions[column_letter].width = 18
+            elif cell.value in ['Description', 'Notes']:
+                sheet.column_dimensions[column_letter].width = 66
+            elif cell.value in ['Offered', 'Online', 'Synchronous']:
+                sheet.column_dimensions[column_letter].width = 5
+                columns_to_format.append(column_letter)
+
+        # Conditional formatting rules to set background red if cell contains 'n', green if cell contains 'y'
+        for column_letter in columns_to_format:
+            sheet.conditional_formatting.add(f'{column_letter}2:{column_letter}1000',
+                                             FormulaRule(formula=[f'NOT(ISERROR(SEARCH("N",{column_letter}2)))'],
+                                                         stopIfTrue=True,
+                                                         fill=red_fill))
+            sheet.conditional_formatting.add(f'{column_letter}2:{column_letter}1000',
+                                             FormulaRule(formula=[f'NOT(ISERROR(SEARCH("Y",{column_letter}2)))'],
+                                                         stopIfTrue=True,
+                                                         fill=green_fill))
 
     def save(self, output_filename):
         self.prettify()
-        self.workbook.save(output_filename)
+        retry = ''
+        while retry != 'a':
+            try:
+                self.workbook.save(output_filename)
+            except PermissionError:
+                retry = input('Error: Failed to save spreadsheet. Is the file already open?\n'
+                              '  Please close Excel and press enter to continue, or type a to abort')
+            else:
+                print(f'Done. Saved results to:\n'
+                      f'{output_filename}')
+                break
